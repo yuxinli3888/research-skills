@@ -36,11 +36,11 @@ python3 fetch-research-papers/fetch_papers.py --doi "10.1080/00207721.2024.24446
 
 ### 2. `obsidian-vault`
 
-Reads, creates, and organizes notes in your Obsidian vault at `~/Documents/Vault/Research`. Copilot uses this skill to save paper notes with YAML frontmatter, search existing notes, and maintain a consistent folder structure.
+Reads, creates, and organizes notes in your Obsidian vault at the path set in `OBSIDIAN_VAULT_PATH`. Copilot uses this skill to save paper notes with YAML frontmatter, search existing notes, and maintain a consistent folder structure.
 
 **Vault folder structure:**
 ```
-~/Documents/Vault/Research/
+${OBSIDIAN_VAULT_PATH}/
 ├── Papers/       # Individual research paper notes
 ├── Topics/       # Topic overviews and Maps of Content
 ├── Daily/        # Daily reading logs (YYYY-MM-DD.md)
@@ -103,13 +103,22 @@ export SCOPUS_API_KEY="your-key-here"
 source .env
 ```
 
-**3. Register the skills folder (once per Copilot session):**
+**3. Set your Obsidian vault path:**
+```powershell
+$env:OBSIDIAN_VAULT_PATH = "C:\Users\<user>\Documents\Obsidian\Research"
 ```
-/skills add /Users/yuxinli/Desktop/Research Skills
+
+```bash
+export OBSIDIAN_VAULT_PATH="$HOME/Documents/Vault/Research"
+```
+
+**4. Register the skills folder (once per Copilot session):**
+```
+/skills add "<path-to-this-repo>"
 /skills reload
 ```
 
-**4. Verify skills are loaded:**
+**5. Verify skills are loaded:**
 ```
 /skills list
 ```

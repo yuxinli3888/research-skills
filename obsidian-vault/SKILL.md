@@ -1,30 +1,61 @@
 ---
 name: obsidian-vault
 description: >
-  Interact with the user's Obsidian vault stored at /Users/yuxinli/Documents/Vault/Research.
+  Interact with the user's Obsidian vault stored at the path in OBSIDIAN_VAULT_PATH.
   Use this skill when asked to: save notes, read notes, search the vault, create research summaries,
   add paper notes, organize knowledge, link notes, or anything related to the user's Obsidian vault.
 ---
 
 ## Obsidian Vault Skill
 
-The user's Obsidian vault is located at: `/Users/yuxinli/Documents/Vault/Research`
+Use the environment variable `OBSIDIAN_VAULT_PATH` as the vault root path.
+
+### Prerequisites
+
+- `OBSIDIAN_VAULT_PATH` must be set to your Obsidian vault root (absolute path).
+- If it is not set, ask the user for their vault root path before reading/writing notes.
+
+Example setup:
+
+```powershell
+$env:OBSIDIAN_VAULT_PATH = "C:\Users\<user>\Documents\Obsidian\Research"
+```
+
+```bash
+export OBSIDIAN_VAULT_PATH="$HOME/Documents/Vault/Research"
+```
 
 ### Reading Notes
 
-To read an existing note, use the bash tool to `cat` the file:
+To read an existing note:
+
 ```bash
-cat "/Users/yuxinli/Documents/Vault/Research/<subfolder>/<note-name>.md"
+cat "${OBSIDIAN_VAULT_PATH}/<subfolder>/<note-name>.md"
+```
+
+or in PowerShell:
+
+```powershell
+Get-Content -Path "$env:OBSIDIAN_VAULT_PATH\<subfolder>\<note-name>.md"
 ```
 
 To search across all notes:
 ```bash
-grep -r "<keyword>" "/Users/yuxinli/Documents/Vault/Research" --include="*.md" -l
+grep -r "<keyword>" "${OBSIDIAN_VAULT_PATH}" --include="*.md" -l
+```
+
+or in PowerShell:
+
+```powershell
+Get-ChildItem -Path $env:OBSIDIAN_VAULT_PATH -Recurse -Filter *.md |
+  Select-String -Pattern "<keyword>" |
+  Select-Object -ExpandProperty Path -Unique
 ```
 
 To list all notes in the vault:
+
 ```bash
-find "/Users/yuxinli/Documents/Vault/Research" -name "*.md" | sort
+find "${OBSIDIAN_VAULT_PATH}" -name "*.md" | sort
 ```
 
 ### Creating or Updating Notes
@@ -78,10 +109,10 @@ To save a new note for a research paper:
 1. Determine the appropriate filename: `<Year> - <Short Title>.md` (e.g., `2024 - Attention Is All You Need.md`)
 2. Place it under `Papers/`
 3. Write the note using the frontmatter template above
-4. Use the bash tool to write the file:
+4. Use file editing tools or shell commands to write the file under `${OBSIDIAN_VAULT_PATH}/Papers/`.
 
 ```bash
-cat > "/Users/yuxinli/Documents/Vault/Research/Papers/<filename>.md" << 'EOF'
+cat > "${OBSIDIAN_VAULT_PATH}/Papers/<filename>.md" << 'EOF'
 <note content>
 EOF
 ```
@@ -92,7 +123,14 @@ Or use the file editing tools to create the note directly.
 
 When saving papers in bulk, append a line to today's daily log:
 ```bash
-echo "- [[Papers/<filename>]] — <one-line description>" >> "/Users/yuxinli/Documents/Vault/Research/Daily/$(date +%Y-%m-%d).md"
+echo "- [[Papers/<filename>]] — <one-line description>" >> "${OBSIDIAN_VAULT_PATH}/Daily/$(date +%Y-%m-%d).md"
+```
+
+PowerShell equivalent:
+
+```powershell
+"- [[Papers/<filename>]] — <one-line description>" |
+  Add-Content -Path "$env:OBSIDIAN_VAULT_PATH\Daily\$(Get-Date -Format yyyy-MM-dd).md"
 ```
 
 ### Wikilinks
@@ -104,3 +142,4 @@ Use Obsidian-style `[[Note Name]]` wikilinks (without `.md` extension) to link b
 - Never delete existing files unless explicitly asked.
 - Always check if a file already exists before creating it to avoid overwriting.
 - Preserve the user's existing formatting and frontmatter style if editing existing notes.
+- Always quote path values to safely handle spaces in folder names.
